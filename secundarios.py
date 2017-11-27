@@ -9,7 +9,7 @@ import json
 
 # Initialize module and load IP to ASN database
 # the sample database can be downloaded or built - see below
-asndb = pyasn.pyasn('rib.20171126.2200.txt')
+asndb = pyasn.pyasn('rib.txt')
 
 def buscar_asn_ipv4(ipv4):
     try:
