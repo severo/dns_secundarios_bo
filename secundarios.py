@@ -1,6 +1,7 @@
 #!/usr/bin/python
 # -*- coding: UTF-8 -*-
 
+from __future__ import print_function
 import argparse
 import dns.name
 import dns.resolver
@@ -80,21 +81,13 @@ def preparar_tabla_formato(datos):
     return tabla
 
 def formatear_stats(datos):
-    tabla = [['Dominio','No Servidores','No IPv4','No ASN']]
-
-    ancho_dominio = max(len(tabla[0][0]), len(datos['dominio'])) + 4
-    ancho_no_servidores = len(tabla[0][1]) + 4
-    ancho_no_ipv4 = len(tabla[0][2]) + 4
-    ancho_no_asn = len(tabla[0][3]) + 4
-
     dominio = datos['dominio']
     no_servidores = len(set(datos['solo_dominios']))
     no_ipv4 = len(set(datos['solo_ipv4']))
     no_asn = len(set(datos['solo_asn']))
-    tabla.append([dominio, no_servidores, no_ipv4, no_asn])
+    tabla = [dominio, no_servidores, no_ipv4, no_asn]
 
-    for fila in tabla:
-        print("{: <{ancho_dominio}} {: <{ancho_no_servidores}} {: <{ancho_no_ipv4}} {: <{ancho_no_asn}}".format(*fila, ancho_dominio=ancho_dominio, ancho_no_servidores=ancho_no_servidores, ancho_no_ipv4=ancho_no_ipv4, ancho_no_asn=ancho_no_asn))
+    print(*tabla, sep='\t')
 
 # TODO: ver si remplazamos por TAB para poder parsear con cut, o awk
 def formatear_csv(tabla):
