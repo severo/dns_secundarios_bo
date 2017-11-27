@@ -68,14 +68,8 @@ def buscar_servidores_autoridad(dominio):
 
     return datos
 
-# TODO: ver si remplazamos por TAB para poder parsear con cut, o awk
-def formatear_csv(datos):
+def preparar_tabla_formato(datos):
     tabla = [['Dominio','Servidor','IPv4','ASN']]
-    ancho_dominio = max(len(tabla[0][0]), len(datos['dominio'])) + 4
-    ancho_servidor = max(len(tabla[0][1]), max(len(s) for s in datos['solo_dominios'] + [""])) + 4
-    ancho_ipv4 = max(len(tabla[0][2]), max(len(s) for s in datos['solo_ipv4'] + [""])) + 4
-    ancho_asn = max(len(tabla[0][3]), max(len(s) for s in datos['solo_asn'] + [""])) + 4
-
     dominio = datos['dominio']
     for s in datos['servidores_NS']:
         ns = s['dominio']
@@ -83,7 +77,33 @@ def formatear_csv(datos):
             ipv4 = d['ipv4']
             asn = d['asn']
             tabla.append([dominio, ns, ipv4, asn])
+    return tabla
 
+def formatear_stats(datos):
+    tabla = [['Dominio','No Servidores','No IPv4','No ASN']]
+
+    ancho_dominio = max(len(tabla[0][0]), len(datos['dominio'])) + 4
+    ancho_no_servidores = len(tabla[0][1]) + 4
+    ancho_no_ipv4 = len(tabla[0][2]) + 4
+    ancho_no_asn = len(tabla[0][3]) + 4
+
+    dominio = datos['dominio']
+    no_servidores = len(set(datos['solo_dominios']))
+    no_ipv4 = len(set(datos['solo_ipv4']))
+    no_asn = len(set(datos['solo_asn']))
+    tabla.append([dominio, no_servidores, no_ipv4, no_asn])
+
+    for fila in tabla:
+        print("{: <{ancho_dominio}} {: <{ancho_no_servidores}} {: <{ancho_no_ipv4}} {: <{ancho_no_asn}}".format(*fila, ancho_dominio=ancho_dominio, ancho_no_servidores=ancho_no_servidores, ancho_no_ipv4=ancho_no_ipv4, ancho_no_asn=ancho_no_asn))
+
+# TODO: ver si remplazamos por TAB para poder parsear con cut, o awk
+def formatear_csv(tabla):
+    tabla = preparar_tabla_formato(datos)
+
+    ancho_dominio = max(len(tabla[0][0]), len(datos['dominio'])) + 4
+    ancho_servidor = max(len(tabla[0][1]), max(len(s) for s in datos['solo_dominios'] + [""])) + 4
+    ancho_ipv4 = max(len(tabla[0][2]), max(len(s) for s in datos['solo_ipv4'] + [""])) + 4
+    ancho_asn = max(len(tabla[0][3]), max(len(s) for s in datos['solo_asn'] + [""])) + 4
     for fila in tabla:
         print("{: <{ancho_dominio}} {: <{ancho_servidor}} {: <{ancho_ipv4}} {: <{ancho_asn}}".format(*fila, ancho_dominio=ancho_dominio, ancho_servidor=ancho_servidor, ancho_ipv4=ancho_ipv4, ancho_asn=ancho_asn))
 
@@ -94,8 +114,9 @@ def formatear_csv(datos):
 # TODO: lanzar sobre una lista de dominios
 parser = argparse.ArgumentParser(description='Muestra los servidores que hacen autoridad sobre un dominio.')
 parser.add_argument('dominio', type=str, help='el nombre de dominio a analizar')
-parser.add_argument('-j', '--json', action='store_true', help='formato de salida en JSON')
 group = parser.add_mutually_exclusive_group()
+group.add_argument('-j', '--json', action='store_true', help='formato de salida en JSON')
+group.add_argument('-s', '--stats', action='store_true', help='mostrar solo estadísticas')
 group.add_argument('-d', '--solo-dominios', action='store_true', help='solo mostrar los nombres de dominios de los servidores (puede incluir duplicados)')
 group.add_argument('-i', '--solo-ipv4', action='store_true', help='solo mostrar las direcciones IPv4 de los servidores (puede incluir duplicados)')
 group.add_argument('-a', '--solo-asn', action='store_true', help='solo mostrar los ASN de las direcciones IPv4 de los servidores (puede incluir duplicados)')
@@ -104,6 +125,7 @@ args = parser.parse_args()
 solo_dominios = args.solo_dominios
 solo_ipv4 = args.solo_ipv4
 solo_asn = args.solo_asn
+stats = args.stats
 formato_json = args.json
 
 # TODO: verificar si dominio es un dominio correcto, y si esta debajo de .gob.bo
@@ -122,5 +144,7 @@ elif solo_asn:
         print(a)
 elif formato_json:
     print(json.dumps(datos))
+elif stats:
+    formatear_stats(datos)
 else:
     formatear_csv(datos)
