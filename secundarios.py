@@ -89,8 +89,13 @@ def formatear_stats(datos):
 
     print(*tabla, sep='\t')
 
-# TODO: ver si remplazamos por TAB para poder parsear con cut, o awk
 def formatear_csv(tabla):
+    tabla = preparar_tabla_formato(datos)
+
+    for fila in tabla:
+        print(*fila, sep='\t')
+
+def formatear_pretty_print(tabla):
     tabla = preparar_tabla_formato(datos)
 
     ancho_dominio = max(len(tabla[0][0]), len(datos['dominio'])) + 4
@@ -105,10 +110,11 @@ def formatear_csv(tabla):
 # TODO: más documentación sobre el JSON generado
 # TODO: más control de errores / excepciones
 # TODO: lanzar sobre una lista de dominios
-parser = argparse.ArgumentParser(description='Muestra los servidores que hacen autoridad sobre un dominio.')
+parser = argparse.ArgumentParser(description='Muestra los servidores que hacen autoridad sobre un dominio. Por defecto muestra los resultados en CSV, con tabulaciones para delimitar')
 parser.add_argument('dominio', type=str, help='el nombre de dominio a analizar')
 group = parser.add_mutually_exclusive_group()
 group.add_argument('-j', '--json', action='store_true', help='formato de salida en JSON')
+group.add_argument('-p', '--pretty-print', action='store_true', help='formato de salida elegante')
 group.add_argument('-s', '--stats', action='store_true', help='mostrar solo estadísticas')
 group.add_argument('-d', '--solo-dominios', action='store_true', help='solo mostrar los nombres de dominios de los servidores (puede incluir duplicados)')
 group.add_argument('-i', '--solo-ipv4', action='store_true', help='solo mostrar las direcciones IPv4 de los servidores (puede incluir duplicados)')
@@ -119,6 +125,7 @@ solo_dominios = args.solo_dominios
 solo_ipv4 = args.solo_ipv4
 solo_asn = args.solo_asn
 stats = args.stats
+pretty_print = args.pretty_print
 formato_json = args.json
 
 # TODO: verificar si dominio es un dominio correcto, y si esta debajo de .gob.bo
@@ -139,5 +146,7 @@ elif formato_json:
     print(json.dumps(datos))
 elif stats:
     formatear_stats(datos)
+elif pretty_print:
+    formatear_pretty_print(datos)
 else:
     formatear_csv(datos)
